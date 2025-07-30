@@ -1,4 +1,4 @@
-import { Redis as RedisClient, RedisOptions } from 'ioredis';
+import { Redis, RedisOptions } from 'ioredis';
 
 type RedisManagerConfigBase = Omit<
     RedisOptions,
@@ -13,12 +13,12 @@ type RedisMangerConfig<T extends string = string> = {
     default: RedisManagerConfigBase;
 } & Record<T, RedisManagerConfigBase>;
 
-type ExtendedRedisClient<K extends string> = RedisClient & {
-    connection: (key: K) => RedisClient;
+type ExtendedRedisClient<K extends string> = Redis & {
+    connection: (key: K) => Redis;
 };
 
 class RedisManager {
-    private static instances: Map<string, RedisClient> = new Map();
+    private static instances: Map<string, Redis> = new Map();
     private static initialized = false;
 
     private constructor() { }
@@ -39,10 +39,10 @@ class RedisManager {
         return this.createProxy<K>();
     }
 
-    private static createInstance(key: string, opt: RedisOptions): RedisClient {
+    private static createInstance(key: string, opt: RedisOptions): Redis {
         if (this.instances.has(key)) return this.instances.get(key)!;
 
-        const client = new RedisClient({
+        const client = new Redis({
             ...opt,
             retryStrategy: (times) => Math.min(times * 100, 5000),
             enableOfflineQueue: true,
@@ -63,7 +63,7 @@ class RedisManager {
         return client;
     }
 
-    private static connection<K extends string>(key: K): RedisClient {
+    private static connection<K extends string>(key: K): Redis {
         if (!this.instances.has(key)) {
             throw new Error(`Redis connection "${key}" not found`);
         }
@@ -72,7 +72,7 @@ class RedisManager {
 
     private static createProxy<K extends string>() {
 
-        const proxy = new Proxy({} as RedisClient, {
+        const proxy = new Proxy({} as Redis, {
             get(_, prop: string) {
                 const client = RedisManager.connection<K>('default' as K);
                 if (prop in client) {
@@ -83,7 +83,7 @@ class RedisManager {
             }
         }) as ExtendedRedisClient<K>;
 
-        proxy.connection = this.connection as (key: K) => RedisClient;
+        proxy.connection = this.connection as (key: K) => Redis;
 
         return proxy;
     }
