@@ -1,0 +1,40 @@
+{
+  "name": "@zepairo/redis-manager",
+  "version": "1.0.0-beta.1",
+  "author": "zepairo",
+  "description": "Zepairo Redis client library for Node.js",
+  "license": "MIT",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "keywords": [
+    "redis",
+    "ioredis",
+    "typescript",
+    "node",
+    "library",
+    "npm",
+    "zepairo"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hr1938082/zepairo-redis-manager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hr1938082/zepairo-redis-manager/issues"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "peerDependencies": {
+    "ioredis": "^5.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.1.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "ioredis": "^5.6.1"
+  }
+}
