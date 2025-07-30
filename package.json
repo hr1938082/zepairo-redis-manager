@@ -22,9 +22,6 @@
   "bugs": {
     "url": "https://github.com/hr1938082/zepairo-redis-manager/issues"
   },
-  "scripts": {
-    "build": "tsc"
-  },
   "peerDependencies": {
     "ioredis": "^5.6.1"
   },

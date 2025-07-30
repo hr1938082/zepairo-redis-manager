@@ -1,6 +1,6 @@
 import { Redis as RedisClient, RedisOptions } from 'ioredis';
 
-export type RedisManagerConfigBase = Omit<
+type RedisManagerConfigBase = Omit<
     RedisOptions,
     "retryStrategy" | "enableOfflineQueue" | "maxRetriesPerRequest"
 >;
@@ -9,7 +9,7 @@ export type RedisConfig = {
     default: RedisManagerConfigBase;
 } & Record<string, RedisManagerConfigBase>
 
-export type RedisMangerConfig<T extends string = string> = {
+type RedisMangerConfig<T extends string = string> = {
     default: RedisManagerConfigBase;
 } & Record<T, RedisManagerConfigBase>;
 
