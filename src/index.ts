@@ -9,9 +9,13 @@ export type RedisConfig = {
     default: RedisManagerConfigBase;
 } & Record<string, RedisManagerConfigBase>
 
-type RedisMangerConfig<T extends string = string> = {
+export type RedisMangerConfig<T extends string = string> = {
     default: RedisManagerConfigBase;
 } & Record<T, RedisManagerConfigBase>;
+
+type ExtendedRedisClient<K extends string> = RedisClient & {
+    connection: (key: K) => RedisClient;
+};
 
 class RedisManager {
     private static instances: Map<string, RedisClient> = new Map();
@@ -30,19 +34,7 @@ class RedisManager {
             this.createInstance(key, config[key]);
         }
 
-        if (!this.initialized) {
-            process.on('SIGINT', async () => {
-                await RedisManager.shutdown();
-                process.exit(0);
-            });
-
-            process.on('SIGTERM', async () => {
-                await RedisManager.shutdown();
-                process.exit(0);
-            });
-
-            this.initialized = true;
-        }
+        this.initialized = true;
 
         return this.createProxy<K>();
     }
@@ -79,9 +71,6 @@ class RedisManager {
     }
 
     private static createProxy<K extends string>() {
-        type ExtendedRedisClient = RedisClient & {
-            connection: (key: K) => RedisClient;
-        };
 
         const proxy = new Proxy({} as RedisClient, {
             get(_, prop: string) {
@@ -92,7 +81,7 @@ class RedisManager {
                 }
                 throw new Error(`Redis method ${prop} not found`);
             }
-        }) as ExtendedRedisClient;
+        }) as ExtendedRedisClient<K>;
 
         proxy.connection = this.connection as (key: K) => RedisClient;
 
@@ -104,12 +93,32 @@ class RedisManager {
         console.info("Shutting down Redis connections...");
         const promises: Promise<string>[] = [];
         this.instances.forEach((redis, name) => {
-            promises.push(redis.quit().then(() => name));
+            promises.push(redis.quit()
+                .then(() => {
+                    console.log(`Redis connection "${name}" closed.`);
+                    return name
+                }));
         });
         await Promise.all(promises);
         this.instances.clear();
         this.initialized = false;
         console.info("All Redis connections closed.");
+    }
+
+    static registerShutdownHooks() {
+        if (this.initialized) {
+            process.on('SIGINT', async () => {
+                await RedisManager.shutdown();
+                process.exit(0);
+            });
+
+            process.on('SIGTERM', async () => {
+                await RedisManager.shutdown();
+                process.exit(0);
+            });
+            console.info("Shutdown hooks registered for Redis connections.");
+
+        }
     }
 }
 

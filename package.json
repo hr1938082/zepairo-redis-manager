@@ -1,6 +1,6 @@
 {
   "name": "@zepairo/redis-manager",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "author": "zepairo",
   "description": "Zepairo Redis client library for Node.js",
   "license": "MIT",
